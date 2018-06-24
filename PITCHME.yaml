@@ -1,5 +1,5 @@
-# theme : beige
-# theme-override : assets/css/PITCHME.css
+theme : beige
+theme-override : assets/css/PITCHME.css
 logo : assets/images/logo.png
 transition : slide
 published : false
