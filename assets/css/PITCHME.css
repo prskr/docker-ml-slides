@@ -39,6 +39,10 @@ span.aside {
   margin-left: 10px;
 }
 
+.reveal section ul li {
+  font-size: 0.8em;
+}
+
 .reveal p span.slide-title {
   color: #e49436;
   font-size: 1.55em;
