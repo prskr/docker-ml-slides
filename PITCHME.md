@@ -10,7 +10,7 @@ MaSe - Peter Kurfer
 
 - Motivation
 - Classic job scheduling systems - Slurm |
-- Comparison criteria |
+- Comparison Slurm vs. Kubernetes |
 
 ---
 
@@ -51,3 +51,181 @@ Slurm has a very modular design that supports the installation plugins.
 The following list contains only features related to the topic of this talk.
 
 Gang scheduling takes care that multiple related threads are executed on different processors to ensure that all threads are active at the same time to avoid blocking e.g. in producer-consumer systems because the producer is running while the consumer is sleeping.
+
+---
+
+## Comparison Slurm vs. Kubernetes
+
+<table class="default">
+    <tr>
+        <th class="default">Feature</th>
+        <th class="default">Slurm</th>
+        <th class="default">Kubernetes</th>
+    </tr>
+    <tr class="fragment">
+        <td class="odd">Highly scalable</td>
+        <td class="odd"><i class="fa fa-thumbs-up"></i></td>
+        <td class="odd"><i class="fa fa-thumbs-up"></i></td>
+    </tr>
+    <tr class="fragment">
+        <td class="even">Fair scheduling</td>
+        <td class="even"><i class="fa fa-thumbs-up"></i></td>
+        <td class="even"><i class="fa fa-thumbs-up"></i></td>
+    </tr>
+    <tr class="fragment">
+        <td class="odd">Gang scheduling</td>
+        <td class="odd"><i class="fa fa-thumbs-up"></i></td>
+        <td class="odd"><i class="fa fa-thumbs-up"></i><br/>
+        with<a href="https://github.com/kubernetes-incubator/kube-arbitrator"> kube-arbitrator</a></td>
+    </tr>
+    <tr class="fragment">
+        <td class="even">Accounting</td>
+        <td class="even"><i class="fa fa-thumbs-up"></i></td>
+        <td class="even"><i class="fa fa-thumbs-down"></i></td>
+    </tr>
+    <tr class="fragment">
+        <td class="odd">Different OS for each job</td>
+        <td class="odd"><i class="fa fa-thumbs-up"></i></td>
+        <td class="odd"><i class="fa fa-thumbs-up"></i></td>
+    </tr>
+    <tr class="fragment">
+        <td class="even">Scheduling of GPUs</td>
+        <td class="even"><i class="fa fa-thumbs-up"></i></td>
+        <td class="even"><i class="fa fa-thumbs-up"></i><br/>
+        still in alpha state</td>
+    </tr>
+    <tr class="fragment">
+        <td class="odd">Scheduling of generic resources</td>
+        <td class="odd"><i class="fa fa-thumbs-up"></i></td>
+        <td class="odd"><i class="fa fa-thumbs-down"></i></td>
+    </tr>
+    <tr class="fragment">
+        <td class="even">Resource limits for users/bank account</td>
+        <td class="even"><i class="fa fa-thumbs-up"></i></td>
+        <td class="even"><i class="fa fa-thumbs-up"></i><br/>
+        Resource limits can be set for namespaces</td>
+    </tr>
+</table>
+
+---
+
+## Kubernetes jobs
+
+- Jobs are natively supported by Kubernetes
+- Jobs can be executed in a single *pod* or in multiple parallel *pods*
+- A job **should always** define resource requests and limits
+- A job is recognized as completed when the container exits with a exit code `0`
+
+Note:
+
+- Explain pods
+- Explain requests and limits
+
++++
+
+### Simple sample job
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pi
+spec:
+  template:
+    spec:
+      containers:
+      - name: pi
+        image: perl
+        command: ["perl",  "-Mbignum=bpi", "-wle", "print bpi(2000)"]
+      restartPolicy: Never
+  backoffLimit: 4
+```
+
+@[1-4](Required metadata to declare Kubernetes resource)
+@[9-11](Declare the container that is running the job)
+
++++
+
+### Job with specified resource allocation policy
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: john-job
+spec:
+  template:
+    spec:
+      containers:
+        - name: john
+          image: knsit/johntheripper:latest
+          command: ["/bin/bash", "-c", "..."]
+          resources:
+            requests:
+              cpu: 1000m
+            limits:
+              nvidia.com/gpu: 1
+              cpu: 2000m
+              memory: 4Gi
+```
+
+@[8-11](Declare the container that is running the job)
+@[13-14](Declare resource requests)
+@[16](Job requires one GPU)
+@[17-18](Declare resource limits for the job)
+
+---
+
+## Parallel jobs in Kubernetes
+
+Kubernetes offers two different kinds of parallel jobs:
+
+1. jobs with fixed count of parallel workers
+2. jobs based on a work queue
+
++++
+
+### Jobs with fixed count of completions
+
+Declare the job like this:
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: parallel-job-1
+spec:
+  template:
+    ...
+  completions: 10
+```
+
+@[8](Declare how many completions (exit code `0`) are required until the job is finished)
+
++++
+
+### Jobs with fixed count of completions - considerations
+
+- A job that declares a fixed count of completions has a default `spec.parallelism` value of `1` but that value can be increased
+- If a pod fails it might be restarted depending on the values for the `backoffLimit` and the `restartPolicy`
+- In a future release Kubernetes will pass the partition index (a value between `1` and `spec.completions`) to each pod to enable the pod to work only on his partition without the need for any external coordinator
+- A higher number for `spec.parallelism` than `spec.completions` is ignored and will fallback to `spec.completions`
+
++++
+
+### Jobs with a work queue
+
+Declare the job like this:
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: parallel-job-1
+spec:
+  template:
+    ...
+  parallelism: 10
+```
+
+@[8](Specify parallelism count. Kubernetes creates as many pods as specified.)

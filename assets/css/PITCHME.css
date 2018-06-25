@@ -57,8 +57,16 @@ span.aside {
   display: block;
 }
 
-.reveal code {
-  font-family: Hasklig, "Fira Code", monospace
+.reveal pre code {
+  font-family: "Fira Code", Hasklig, monospace;
+}
+
+.reveal table th {
+  text-align: center;
+}
+
+.reveal table td {
+  text-align: center;
 }
 
 .reveal table {
@@ -94,6 +102,7 @@ span.aside {
 }
 
 table.default {
+  width: 70%;
   border-collapse: collapse;
   border-spacing: 0;
   border-color: #999;
