@@ -4,6 +4,8 @@
 
 MaSe - Peter Kurfer
 
+<small>Matr.-Nr. 817418</small>
+
 ---
 
 ## Agenda
@@ -112,10 +114,10 @@ Gang scheduling takes care that multiple related threads are executed on differe
 ## Kubernetes jobs
 
 <ul>
-  <li>Jobs are natively supported by Kubernetes</li>
-  <li>Jobs can be executed in a single <i>pod</i> or in multiple parallel <i>pods</i></li>
-  <li>A job <b>should always</b> define resource requests and limits</li>
-  <li>A job is recognized as completed when the container exits with a exit code <code>0</code></li>
+  <li class="fragment">Jobs are natively supported by Kubernetes</li>
+  <li class="fragment">Jobs can be executed in a single <i>pod</i> or in multiple parallel <i>pods</i></li>
+  <li class="fragment">A job <b>should always</b> define resource requests and limits</li>
+  <li class="fragment">A job is recognized as completed when the container exits with a exit code <code>0</code></li>
 </ul>
 
 Note:
@@ -182,8 +184,8 @@ spec:
 
 Kubernetes offers two different kinds of parallel jobs:
 
-1. Jobs with fixed count of parallel workers |
-2. Jobs based on a work queue |
+1. Jobs with fixed count of parallel workers
+2. Jobs based on a work queue
 
 +++
 
@@ -242,3 +244,31 @@ spec:
 ```
 
 @[8](Specify parallelism count. Kubernetes creates as many pods as specified.)
+
++++
+
+@title[Jobs with a work queue - considerations - part 1]
+### Jobs with a work queue - considerations
+
+<ul>
+  <li class="fragment">With a higher parallelism count than <code>1</code> the work can be distributed across multiple nodes</li>
+  <li class="fragment">Developers have to take care that work is distributed (approximately) even on all available pods</li>
+</ul>
+
++++
+
+@title[Jobs with a work queue - considerations - part 2]
+### Jobs with a work queue - considerations
+
+<ul>
+  <li class="fragment">Parallelism count might not be reached if not enough resources are available (<code>requests</code> for CPU, memory or other resources)</li>
+  <li class="fragment">Overhead of higher parallelism count is higher than in single <i>pod</i> jobs because <i>pod</i> creation takes its time</li>
+</ul>
+
+---
+
+## Conclusion
+
+- It depends on the use case if Kubernetes meets the requirements |
+- There are already a lot of success stories where Kubernetes is used as a job scheduler for ML and Big Data tasks (e.g. RiseML, kube-arbitrator) |
+- Kubernetes is not a fully fledged job scheduler compared to Slurm (yet) as features like accounting are missing |
