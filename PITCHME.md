@@ -27,11 +27,11 @@ MaSe - Peter Kurfer
 ## Classic job scheduling systems - Slurm
 
 - Slurm is an abbreviation for "Simple Linux Utility for Resource Management"
-- Slurm has three key features:
-    1. Allocation of exclusive/non-exclusive access to ressources
+- Slurm has three key features: |
+    1. Allocation of exclusive/non-exclusive access to resources
     2. Providing a framework for starting, executing and monitoring tasks on a set of allocated nodes
     3. Managing pending jobs in queues until they can be executed
-- Slurm is used on 60% of the TOP500 supercomputers
+- Slurm is used on 60% of the TOP500 supercomputers |
 
 +++
 
@@ -111,10 +111,12 @@ Gang scheduling takes care that multiple related threads are executed on differe
 
 ## Kubernetes jobs
 
-- Jobs are natively supported by Kubernetes
-- Jobs can be executed in a single *pod* or in multiple parallel *pods*
-- A job **should always** define resource requests and limits
-- A job is recognized as completed when the container exits with a exit code `0`
+<ul>
+  <li>Jobs are natively supported by Kubernetes</li>
+  <li>Jobs can be executed in a single <i>pod</i> or in multiple parallel <i>pods</i></li>
+  <li>A job <b>should always</b> define resource requests and limits</li>
+  <li>A job is recognized as completed when the container exits with a exit code <code>0</code></li>
+</ul>
 
 Note:
 
@@ -180,8 +182,8 @@ spec:
 
 Kubernetes offers two different kinds of parallel jobs:
 
-1. jobs with fixed count of parallel workers
-2. jobs based on a work queue
+1. Jobs with fixed count of parallel workers |
+2. Jobs based on a work queue |
 
 +++
 
@@ -204,12 +206,23 @@ spec:
 
 +++
 
+@title[Jobs with fixed count of completions - considerations - part 2]
 ### Jobs with fixed count of completions - considerations
 
-- A job that declares a fixed count of completions has a default `spec.parallelism` value of `1` but that value can be increased
-- If a pod fails it might be restarted depending on the values for the `backoffLimit` and the `restartPolicy`
-- In a future release Kubernetes will pass the partition index (a value between `1` and `spec.completions`) to each pod to enable the pod to work only on his partition without the need for any external coordinator
-- A higher number for `spec.parallelism` than `spec.completions` is ignored and will fallback to `spec.completions`
+<ul>
+  <li class="fragment">A job that declares a fixed count of completions has a default <code>spec.parallelism</code> value of <code>1</code> but that value can be increased</li>
+  <li class="fragment">If a pod fails it might be restarted depending on the values for the <code>backoffLimit</code> and the <code>restartPolicy</code></li>
+</ul>
+
++++
+
+@title[Jobs with fixed count of completions - considerations - part 1]
+### Jobs with fixed count of completions - considerations
+
+<ul>
+  <li class="fragment">In a future release Kubernetes will pass the partition index (a value between <code>1</code> and <code>spec.completions</code>) to each pod to enable the pod to work only on his partition without the need for any external coordinator</li>
+  <li class="fragment">A higher number for `spec.parallelism` than <code>spec.completions</code> is ignored and will fallback to <code>spec.completions</code></li>
+</ul>
 
 +++
 
